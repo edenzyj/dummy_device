@@ -1,4 +1,5 @@
 import re, time, json, threading, requests, traceback
+from statistics import mean, pstdev
 from datetime import datetime
 import paho.mqtt.client as mqtt
 import DAN, SA
@@ -122,9 +123,16 @@ def ExceptionHandler(err):
     if MQTT_broker: mqttc.reconnect()
 
 if __name__ == '__main__':
-    while True:
-        try:
+    try:
+        for i in range(100):
             DF_function_handler()
             time.sleep(exec_interval)
-        except BaseException as err:
-            ExceptionHandler(err)
+        avg = mean(SA.delay_list)
+        sigma = pstdev(SA.delay_list)
+        print("MQTT delay = {}".format(avg))
+        print("CV = {}".format(sigma / avg))
+        DAN.deregister()
+        print("It's the end, Bye~")
+            
+    except BaseException as err:
+        ExceptionHandler(err)
